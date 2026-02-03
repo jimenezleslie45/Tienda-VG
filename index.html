@@ -355,28 +355,38 @@ document.getElementById("uploadForm").addEventListener("submit", function(e) {
     const name = productName.value || "Producto sin nombre";
     const price = productPrice.value || 0;
     const quantity = productQuantity.value || 0;
-    const file = productImage.files[0];
+    const files = productImage.files;
 
-    const save = (img) => {
+    if (files.length === 0) {
+        alert("Selecciona al menos una imagen");
+        return;
+    }
+
+    let processed = 0;
+    const total = files.length;
+
+    const save = (img, index) => {
         products.push({
-            id: Date.now(),
-            name,
+            id: Date.now() + index,
+            name: total > 1 ? `${name} ${index + 1}` : name,
             price,
             quantity,
             image: img
         });
-        localStorage.setItem("products", JSON.stringify(products));
-        renderProducts();
-        renderInventory();
-        this.reset();
+        processed++;
+        if (processed === total) {
+            localStorage.setItem("products", JSON.stringify(products));
+            renderProducts();
+            renderInventory();
+            this.reset();
+        }
     };
 
-    if (file) {
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
         const reader = new FileReader();
-        reader.onload = e => save(e.target.result);
+        reader.onload = (e) => save(e.target.result, i);
         reader.readAsDataURL(file);
-    } else {
-        save("https://via.placeholder.com/300x200?text=Sin+Imagen");
     }
 });
 
