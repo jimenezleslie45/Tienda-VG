@@ -135,12 +135,12 @@
         }
 
         .product img {
-            width: 100%;
-            height: 180px;
-            object-fit: cover;
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
+    aspect-ratio: 4 / 3;
+    width: 100%;
+    object-fit: contain;
+    background: #f4f4f4;
+}
+
 
         .product h3 { margin: 10px 0; color: var(--primary-dark); }
         .product p { color: #7f8c8d; font-weight: bold; font-size: 1.1em; }
@@ -262,10 +262,11 @@
             <h2>Panel de Administración</h2>
             <div class="upload-form">
                 <form id="uploadForm">
-                    <input type="text" id="productName" placeholder="Nombre del producto" required>
-                    <input type="number" id="productPrice" placeholder="Precio ($)" required>
-                    <input type="number" id="productQuantity" placeholder="Cantidad en stock" required>
-                    <input type="file" id="productImage" accept="image/*" required>
+                    <input type="text" id="productName" placeholder="Nombre del producto">
+                     <input type="number" id="productPrice" placeholder="Precio ($)">
+                     <input type="number" id="productQuantity" placeholder="Cantidad en stock">
+                     <input type="file" id="productImage" accept="image/*">
+
                     <button type="submit">Publicar Producto</button>
                 </form>
             </div>
@@ -337,7 +338,7 @@
                 renderInventory();
                 renderSales();
                 
-                const msg = `Hola, quiero comprar: ${product.name} por $${product.price}.`;
+                const msg = `Hola, quiero comprar: Me gustaria informacion sobre dicho producto y envio. ${product.name} por $${product.price}.`;
                 window.open(`https://wa.me/44969900?text=${encodeURIComponent(msg)}`, '_blank');
             } else {
                 alert('Producto agotado.');
@@ -369,13 +370,10 @@
             const file = document.getElementById('productImage').files[0];
             const reader = new FileReader();
             reader.onload = function(e) {
-                const newProduct = {
-                    id: Date.now(),
-                    name: document.getElementById('productName').value,
-                    price: document.getElementById('productPrice').value,
-                    quantity: document.getElementById('productQuantity').value,
-                    image: e.target.result
-                };
+                const name = productName.value || "Producto sin nombre";
+                const price = productPrice.value || 0;
+                const quantity = productQuantity.value || 0;
+
                 products.push(newProduct);
                 localStorage.setItem('products', JSON.stringify(products));
                 renderProducts();
