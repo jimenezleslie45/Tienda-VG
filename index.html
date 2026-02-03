@@ -272,6 +272,10 @@ function renderProducts() {
 function renderInventory() {
     const list = document.getElementById("inventoryList");
     list.innerHTML = "";
+    if (!isAdmin) {
+        list.innerHTML = "<li>Solo para administradores</li>";
+        return;
+    }
     products.forEach(p => {
         const li = document.createElement("li");
         li.textContent = `${p.name}: ${p.quantity}`;
