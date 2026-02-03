@@ -1,391 +1,328 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Variedades García - Tienda en Línea</title>
-    <style>
-        /* Paleta de colores mejorada: Elegante y profesional */
-        :root {
-            --primary-dark: #d6e4df;
-            --accent-blue: #90bedd;
-            --bg-light: #f4f7f6;
-            --text-main: #2c3e50;
-            --white: #ffffff;
-            --success: #27ae60;
-            --footer-bg: #34495e; /* Nuevo color para el footer: gris oscuro para un look más formal */
-            --blue-transparent: rgba(144, 190, 221, 0.8); /* Azul transparente para inventario */
-            --gray-bg: #ecf0f1; /* Gris claro para ventas */
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Variedades García</title>
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: var(--bg-light);
-            color: var(--text-main);
-        }
+<style>
+:root {
+    --primary: #c9c4c3;
+    --accent: #90bedd;
+    --bg: #f4f7f6;
+    --text: #2c3e50;
+    --white: #fff;
+    --success: #27ae60;
+    --footer: #34495e;
+}
 
-        /* Header con Logo arriba */
-        header {
-            background-color: var(--primary-dark);
-            color: var(--white);
-            text-align: center;
-            padding: 30px 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        }
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+}
 
-        .header-logo {
-            width: 150px;       /* Tamaño del logo */
-            height: 150px;      /* Debe ser igual al ancho para que el círculo sea perfecto */
-            object-fit: cover;  /* Evita que el logo se estire */
-            
-            /* CORTA LA IMAGEN: Esto elimina cualquier esquina o borde blanco del archivo original */
-            clip-path: circle(50% at 50% 50%);
-            
-            /* Centrado y margen */
-            display: block;
-            margin: 0 auto 15px auto;
-            
-            /* Agregar un fondo sutil para ocultar cualquier borde blanco residual si la imagen tiene transparencia */
-            background-color: var(--primary-dark); /* Fondo del mismo color que el header para blending */
-            border: 2px solid var(--white); /* Borde blanco sutil para destacar el logo */
-        }
+header {
+    background: var(--primary);
+    text-align: center;
+    padding: 30px;
+}
 
-        header h1 {
-            margin: 5px 0;
-            font-size: 2.2em;
-            letter-spacing: 1px;
-        }
+.header-logo {
+    width: 140px;
+    height: 140px;
+    object-fit: cover;
+    clip-path: circle(50%);
+}
 
-        header p {
-            margin: 5px 0;
-            opacity: 0.9;
-            font-style: italic;
-        }
+.whatsapp-link {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 10px 25px;
+    background: var(--success);
+    color: white;
+    text-decoration: none;
+    border-radius: 25px;
+    font-weight: bold;
+}
 
-        .whatsapp-link {
-            display: inline-block;
-            margin-top: 15px;
-            padding: 10px 20px;
-            background-color: var(--success);
-            color: white;
-            text-decoration: none;
-            font-weight: bold;
-            border-radius: 25px;
-            transition: transform 0.2s;
-        }
+.container {
+    max-width: 1100px;
+    margin: 30px auto;
+    padding: 0 20px;
+}
 
-        .whatsapp-link:hover {
-            transform: scale(1.05);
-            background-color: #219150;
-        }
+.section {
+    background: white;
+    padding: 25px;
+    margin-bottom: 30px;
+    border-radius: 10px;
+}
 
-        .container {
-            max-width: 1100px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
+.section h2 {
+    border-left: 5px solid var(--accent);
+    padding-left: 10px;
+}
 
-        /* Secciones con tarjetas blancas limpias */
-        .section {
-            background: var(--white);
-            margin-bottom: 30px;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        }
-
-        .section h2 {
-            color: var(--primary-dark);
-            border-left: 5px solid var(--accent-blue);
-            padding-left: 15px;
-            margin-bottom: 20px;
-            font-size: 1.5em;
-        }
-
-        .shipping-info {
-            background: #e8f4fd;
-            border: 1px solid #d0e7f9;
-            color: #2c3e50;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-        }
-
-        /* Grid de Productos */
-        .products {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-        }
-
-        .product {
-            background: var(--white);
-            border: 1px solid #eee;
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-
-        .product:hover {
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-            transform: translateY(-5px);
-        }
-
-        .product img {
-    aspect-ratio: 4 / 3;
+.upload-form input,
+.upload-form button {
     width: 100%;
+    padding: 12px;
+    margin-bottom: 10px;
+}
+
+.upload-form button {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.products {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+}
+
+.product {
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+}
+
+.product img {
+    width: 100%;
+    height: auto;
+    max-height: 260px;
     object-fit: contain;
     background: #f4f4f4;
+    border-radius: 8px;
 }
 
 
-        .product h3 { margin: 10px 0; color: var(--primary-dark); }
-        .product p { color: #7f8c8d; font-weight: bold; font-size: 1.1em; }
 
-        .product button {
-            background: var(--primary-dark);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            width: 100%;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            margin-top: 10px;
-        }
 
-        .product button:hover { background: var(--accent-blue); }
+.product button {
+    margin-top: 10px;
+    width: 100%;
+    padding: 10px;
+    background: var(--primary);
+    border: none;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
 
-        /* Formularios y Tablas */
-        .upload-form input {
-            display: block;
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            box-sizing: border-box;
-        }
+.grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
 
-        .upload-form button {
-            background: var(--accent-blue);
-            color: white;
-            border: none;
-            padding: 12px;
-            width: 100%;
-            border-radius: 6px;
-            font-weight: bold;
-            cursor: pointer;
-        }
+.inventory, .sales {
+    background: #ecf0f1;
+    padding: 20px;
+    border-radius: 8px;
+}
 
-        /* Mejoras para las secciones laterales: Inventario y Ventas */
-        .inventory {
-            background: var(--blue-transparent); /* Azul transparente para inventario (lado izquierdo) */
-            padding: 20px;
-            border-radius: 8px;
-            color: var(--text-main);
-        }
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
 
-        .inventory h3 {
-            margin-top: 0;
-            color: var(--text-main);
-        }
+th, td {
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+}
 
-        .inventory ul {
-            list-style: none;
-            padding: 0;
-        }
+th {
+    background: var(--accent);
+    color: white;
+}
 
-        .inventory li {
-            padding: 5px 0;
-            font-weight: bold;
-        }
-
-        .sales-log {
-            background: var(--gray-bg); /* Gris para ventas (lado derecho) */
-            padding: 20px;
-            border-radius: 8px;
-            color: var(--text-main);
-        }
-
-        .sales-log h3 {
-            margin-top: 0;
-            color: var(--text-main);
-        }
-
-        .sales-log table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .sales-log th, .sales-log td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #bdc3c7;
-        }
-
-        .sales-log th {
-            background: #95a5a6;
-            color: var(--white);
-        }
-
-        footer {
-            text-align: center;
-            padding: 40px;
-            background: var(--footer-bg); /* Color mejorado: gris oscuro para un look más formal y profesional */
-            color: white;
-            margin-top: 40px;
-        }
-    </style>
+footer {
+    background: var(--footer);
+    color: white;
+    text-align: center;
+    padding: 30px;
+}
+</style>
 </head>
+
 <body>
 
-    <header>
-        <img src="imagen/Logo1.jpg" alt="Logo Variedades García" class="header-logo">
-        <h1>Variedades García</h1>
-        <p>Tu tienda de confianza con productos de alta calidad importados desde usa  </p>
-        <a href="https://wa.me/44969900" class="whatsapp-link" target="_blank">Escríbenos por WhatsApp</a>
-    </header>
+<header>
+    <img src="imagen/Logo1.jpg" class="header-logo">
+    <h1>Variedades García</h1>
+    <p>Productos de calidad importados desde usa</p>
+    <a class="whatsapp-link" href="https://wa.me/44969900" target="_blank">
+        Escríbenos por WhatsApp
+    </a>
+</header>
 
-    <div class="container">
-        <div class="section">
-            <h2>Información de Envíos</h2>
-            <div class="shipping-info">
-                <p>📦 <strong>Envíos a todo el país.</strong> Procesamos tu orden en menos de 48 horas con número de rastreo.</p>
-            </div>
-        </div>
+<div class="container">
 
-        <div class="section">
-            <h2>Panel de Administración</h2>
-            <div class="upload-form">
-                <form id="uploadForm">
-                    <input type="text" id="productName" placeholder="Nombre del producto">
-                     <input type="number" id="productPrice" placeholder="Precio ($)">
-                     <input type="number" id="productQuantity" placeholder="Cantidad en stock">
-                     <input type="file" id="productImage" accept="image/*">
+<!-- PANEL ADMIN -->
+<div class="section">
+<h2>Panel de Administración</h2>
+<form id="uploadForm" class="upload-form">
+    <input type="text" id="productName" placeholder="Nombre del producto">
+    <input type="number" id="productPrice" placeholder="Precio">
+    <input type="number" id="productQuantity" placeholder="Cantidad">
+    <input type="file" id="productImage" accept="image/*">
+    <button type="button" onclick="loginAdmin()">Modo Admin</button>
 
-                    <button type="submit">Publicar Producto</button>
-                </form>
-            </div>
-        </div>
+    <button type="submit">Publicar Producto</button>
+</form>
+</div>
 
-        <div class="section">
-            <h2>Catálogo de Productos</h2>
-            <div class="products" id="productsContainer">
-                </div>
-        </div>
+<!-- CATALOGO -->
+<div class="section">
+<h2>Catálogo de Productos</h2>
+<div id="productsContainer" class="products"></div>
+</div>
 
-        <div class="section">
-            <h2>Inventario y Ventas</h2>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                <div class="inventory">
-                    <h3>Stock Actual</h3>
-                    <ul id="inventoryList" style="padding-left: 20px;"></ul>
-                </div>
-                <div class="sales-log">
-                    <h3>Registro de Ventas</h3>
-                    <table id="salesTable">
-                        <thead>
-                            <tr>
-                                <th>Producto</th>
-                                <th>Fecha</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+<!-- INVENTARIO Y VENTAS -->
+<div class="section">
+<h2>Inventario y Ventas</h2>
+
+<div class="grid-2">
+    <div class="inventory">
+        <h3>Inventario</h3>
+        <ul id="inventoryList"></ul>
     </div>
 
-    <footer>
-        <p>&copy; 2026 Variedades García. Todos los derechos reservados.</p>
-    </footer>
+    <div class="sales">
+        <h3>Ventas</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Fecha</th>
+                </tr>
+            </thead>
+            <tbody id="salesTable"></tbody>
+        </table>
+    </div>
+</div>
+</div>
 
-    <script>
-        // Lógica de funcionamiento
-        let products = JSON.parse(localStorage.getItem('products')) || [];
-        let sales = JSON.parse(localStorage.getItem('sales')) || [];
+</div>
 
-        function renderProducts() {
-            const container = document.getElementById('productsContainer');
-            container.innerHTML = products.length === 0 ? '<p>No hay productos disponibles.</p>' : '';
-            products.forEach(product => {
-                const productDiv = document.createElement('div');
-                productDiv.className = 'product';
-                productDiv.innerHTML = `
-                    <img src="${product.image}" alt="${product.name}">
-                    <h3>${product.name}</h3>
-                    <p>$${product.price}</p>
-                    <small>Disponibles: ${product.quantity}</small>
-                    <button onclick="sellProduct(${product.id})">Comprar Ahora</button>
-                `;
-                container.appendChild(productDiv);
-            });
-        }
+<footer>
+<p>&copy; 2026 Variedades García</p>
+</footer>
 
-        function sellProduct(id) {
-            const product = products.find(p => p.id === id);
-            if (product && product.quantity > 0) {
-                product.quantity--;
-                sales.push({ name: product.name, date: new Date().toLocaleDateString() });
-                localStorage.setItem('products', JSON.stringify(products));
-                localStorage.setItem('sales', JSON.stringify(sales));
-                renderProducts();
-                renderInventory();
-                renderSales();
-                
-                const msg = `Hola, quiero comprar: Me gustaria informacion sobre dicho producto y envio. ${product.name} por $${product.price}.`;
-                window.open(`https://wa.me/44969900?text=${encodeURIComponent(msg)}`, '_blank');
-            } else {
-                alert('Producto agotado.');
-            }
-        }
+<script>
+let products = JSON.parse(localStorage.getItem("products")) || [];
+let sales = JSON.parse(localStorage.getItem("sales")) || [];
 
-        function renderInventory() {
-            const list = document.getElementById('inventoryList');
-            list.innerHTML = '';
-            products.forEach(p => {
-                const li = document.createElement('li');
-                li.innerHTML = `<strong>${p.name}</strong>: ${p.quantity} pzs.`;
-                list.appendChild(li);
-            });
-        }
+function renderProducts() {
+    const container = document.getElementById("productsContainer");
+    container.innerHTML = "";
 
-        function renderSales() {
-            const tbody = document.getElementById('salesTable').querySelector('tbody');
-            tbody.innerHTML = '';
-            sales.forEach(s => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `<td>${s.name}</td><td>${s.date}</td>`;
-                tbody.appendChild(tr);
-            });
-        }
+    if (products.length === 0) {
+        container.innerHTML = "<p>No hay productos.</p>";
+        return;
+    }
 
-        document.getElementById('uploadForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const file = document.getElementById('productImage').files[0];
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const name = productName.value || "Producto sin nombre";
-                const price = productPrice.value || 0;
-                const quantity = productQuantity.value || 0;
+    products.forEach(p => {
+        const div = document.createElement("div");
+        div.className = "product";
+        div.innerHTML = `
+            <img src="${p.image}">
+            <h3>${p.name}</h3>
+            <p>Q${p.price}</p>
+            <p>Stock: ${p.quantity}</p>
+            <button onclick="sellProduct(${p.id})">Comprar</button>
+        `;
+        container.appendChild(div);
+    });
+}
 
-                products.push(newProduct);
-                localStorage.setItem('products', JSON.stringify(products));
-                renderProducts();
-                renderInventory();
-                document.getElementById('uploadForm').reset();
-            };
-            reader.readAsDataURL(file);
+function renderInventory() {
+    const list = document.getElementById("inventoryList");
+    list.innerHTML = "";
+    products.forEach(p => {
+        const li = document.createElement("li");
+        li.textContent = `${p.name}: ${p.quantity}`;
+        list.appendChild(li);
+    });
+}
+
+function renderSales() {
+    const table = document.getElementById("salesTable");
+    table.innerHTML = "";
+    sales.forEach(s => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${s.name}</td><td>${s.date}</td>`;
+        table.appendChild(tr);
+    });
+}
+
+function sellProduct(id) {
+    const product = products.find(p => p.id === id);
+    if (!product || product.quantity <= 0) {
+        alert("Producto agotado");
+        return;
+    }
+
+    product.quantity--;
+    sales.push({
+        name: product.name,
+        date: new Date().toLocaleDateString()
+    });
+
+    localStorage.setItem("products", JSON.stringify(products));
+    localStorage.setItem("sales", JSON.stringify(sales));
+
+    renderProducts();
+    renderInventory();
+    renderSales();
+
+    const msg = `¡Hola, Variedades García! 👋🌟Me gustaría solicitar información o comprar el siguiente producto ${product.name} por Q${product.price}`;
+    window.open(`https://wa.me/44969900?text=${encodeURIComponent(msg)}`, "_blank");
+}
+
+document.getElementById("uploadForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const name = productName.value || "Producto sin nombre";
+    const price = productPrice.value || 0;
+    const quantity = productQuantity.value || 0;
+    const file = productImage.files[0];
+
+    const save = (img) => {
+        products.push({
+            id: Date.now(),
+            name,
+            price,
+            quantity,
+            image: img
         });
-
+        localStorage.setItem("products", JSON.stringify(products));
         renderProducts();
         renderInventory();
-        renderSales();
-    </script>
+        this.reset();
+    };
+
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = e => save(e.target.result);
+        reader.readAsDataURL(file);
+    } else {
+        save("https://via.placeholder.com/300x200?text=Sin+Imagen");
+    }
+});
+
+renderProducts();
+renderInventory();
+renderSales();
+</script>
+
 </body>
 </html>
