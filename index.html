@@ -484,10 +484,11 @@ document.getElementById("uploadForm").addEventListener("submit", function(e) {
             image: img
         });
         processed++;
+        // Guardar inmediatamente en localStorage después de cada imagen procesada
+        localStorage.setItem("products", JSON.stringify(products));
+        renderProducts();
+        renderInventory();
         if (processed === total) {
-            localStorage.setItem("products", JSON.stringify(products));
-            renderProducts();
-            renderInventory();
             this.reset();
         }
     };
