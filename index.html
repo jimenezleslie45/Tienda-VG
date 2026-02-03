@@ -7,7 +7,7 @@
 
 <style>
 :root {
-    --primary: #c9c4c3;
+    --primary: #E0BBE4;
     --accent: #90bedd;
     --bg: #f4f7f6;
     --text: #2c3e50;
@@ -166,15 +166,16 @@ footer {
 
 <div class="container">
 
+<button type="button" onclick="loginAdmin()" id="adminButton">Modo Admin</button>
+
 <!-- PANEL ADMIN -->
-<div class="section">
+<div class="section" id="adminPanel" style="display:none">
 <h2>Panel de Administración</h2>
 <form id="uploadForm" class="upload-form">
     <input type="text" id="productName" placeholder="Nombre del producto">
     <input type="number" id="productPrice" placeholder="Precio">
     <input type="number" id="productQuantity" placeholder="Cantidad">
-    <input type="file" id="productImage" accept="image/*">
-    <button type="button" onclick="loginAdmin()">Modo Admin</button>
+    <input type="file" id="productImage" accept="image/*" capture="environment">
 
     <button type="submit">Publicar Producto</button>
 </form>
@@ -220,6 +221,24 @@ footer {
 <script>
 let products = JSON.parse(localStorage.getItem("products")) || [];
 let sales = JSON.parse(localStorage.getItem("sales")) || [];
+let isAdmin = false;
+
+function loginAdmin() {
+    if (!isAdmin) {
+        const password = prompt("Contraseña de admin:");
+        if (password === "admin2026") { // Cambia esta contraseña por una segura
+            isAdmin = true;
+            document.getElementById("adminPanel").style.display = "block";
+            document.querySelector("button[onclick='loginAdmin()']").textContent = "Salir Admin";
+        } else {
+            alert("Contraseña incorrecta");
+        }
+    } else {
+        isAdmin = false;
+        document.getElementById("adminPanel").style.display = "none";
+        document.querySelector("button[onclick='loginAdmin()']").textContent = "Modo Admin";
+    }
+}
 
 function renderProducts() {
     const container = document.getElementById("productsContainer");
@@ -240,6 +259,12 @@ function renderProducts() {
             <p>Stock: ${p.quantity}</p>
             <button onclick="sellProduct(${p.id})">Comprar</button>
         `;
+        if (isAdmin) {
+            div.innerHTML += `<button onclick="editProduct(${p.id})">Editar</button><button onclick="deleteProduct(${p.id})">Eliminar</button>`;
+            if (p.quantity === 0) {
+                div.innerHTML += `<button onclick="deleteSoldProduct(${p.id})" style="background:red;">Eliminar Vendido</button>`;
+            }
+        }
         container.appendChild(div);
     });
 }
@@ -288,8 +313,44 @@ function sellProduct(id) {
     window.open(`https://wa.me/44969900?text=${encodeURIComponent(msg)}`, "_blank");
 }
 
+function editProduct(id) {
+    const product = products.find(p => p.id === id);
+    if (!product) return;
+    const newName = prompt("Nuevo nombre:", product.name);
+    const newPrice = prompt("Nuevo precio:", product.price);
+    const newQuantity = prompt("Nueva cantidad:", product.quantity);
+    if (newName !== null) product.name = newName;
+    if (newPrice !== null) product.price = parseFloat(newPrice) || product.price;
+    if (newQuantity !== null) product.quantity = parseInt(newQuantity) || product.quantity;
+    localStorage.setItem("products", JSON.stringify(products));
+    renderProducts();
+    renderInventory();
+}
+
+function deleteProduct(id) {
+    if (confirm("¿Eliminar este producto?")) {
+        products = products.filter(p => p.id !== id);
+        localStorage.setItem("products", JSON.stringify(products));
+        renderProducts();
+        renderInventory();
+    }
+}
+
+function deleteSoldProduct(id) {
+    if (confirm("¿Eliminar este producto vendido?")) {
+        products = products.filter(p => p.id !== id);
+        localStorage.setItem("products", JSON.stringify(products));
+        renderProducts();
+        renderInventory();
+    }
+}
+
 document.getElementById("uploadForm").addEventListener("submit", function(e) {
     e.preventDefault();
+    if (!isAdmin) {
+        alert("Solo el administrador puede publicar productos");
+        return;
+    }
 
     const name = productName.value || "Producto sin nombre";
     const price = productPrice.value || 0;
