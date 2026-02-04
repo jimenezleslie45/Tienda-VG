@@ -323,9 +323,78 @@ footer {
 </footer>
 
 <script>
-let products = JSON.parse(localStorage.getItem("products")) || [];
-let sales = JSON.parse(localStorage.getItem("sales")) || [];
+// IndexedDB setup
+let db;
+const dbName = 'TiendaDB';
+const productsStore = 'products';
+const salesStore = 'sales';
+
+function openDB() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(dbName, 1);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+            db = request.result;
+            resolve(db);
+        };
+        request.onupgradeneeded = (event) => {
+            const db = event.target.result;
+            if (!db.objectStoreNames.contains(productsStore)) {
+                db.createObjectStore(productsStore, { keyPath: 'id' });
+            }
+            if (!db.objectStoreNames.contains(salesStore)) {
+                db.createObjectStore(salesStore, { keyPath: 'id', autoIncrement: true });
+            }
+        };
+    });
+}
+
+async function loadData() {
+    await openDB();
+    products = await getAll(productsStore);
+    sales = await getAll(salesStore);
+}
+
+function getAll(storeName) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction([storeName], 'readonly');
+        const store = transaction.objectStore(storeName);
+        const request = store.getAll();
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
+}
+
+function saveItem(storeName, item) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction([storeName], 'readwrite');
+        const store = transaction.objectStore(storeName);
+        const request = store.put(item);
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+    });
+}
+
+function deleteItem(storeName, id) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction([storeName], 'readwrite');
+        const store = transaction.objectStore(storeName);
+        const request = store.delete(id);
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+    });
+}
+
+let products = [];
+let sales = [];
 let isAdmin = false;
+
+// Load data on page load
+loadData().then(() => {
+    renderProducts();
+    renderInventory();
+    renderSales();
+});
 
 function loginAdmin() {
     if (!isAdmin) {
@@ -397,7 +466,7 @@ function renderSales() {
     });
 }
 
-function sellProduct(id) {
+async function sellProduct(id) {
     const product = products.find(p => p.id === id);
     if (!product || product.quantity <= 0) {
         alert("Producto agotado");
@@ -405,13 +474,14 @@ function sellProduct(id) {
     }
 
     product.quantity--;
-    sales.push({
+    await saveItem(productsStore, product);
+    await saveItem(salesStore, {
         name: product.name,
         date: new Date().toLocaleDateString()
     });
 
-    localStorage.setItem("products", JSON.stringify(products));
-    localStorage.setItem("sales", JSON.stringify(sales));
+    products = await getAll(productsStore);
+    sales = await getAll(salesStore);
 
     renderProducts();
     renderInventory();
@@ -421,7 +491,7 @@ function sellProduct(id) {
     window.open(`https://wa.me/44969900?text=${encodeURIComponent(msg)}`, "_blank");
 }
 
-function editProduct(id) {
+async function editProduct(id) {
     const product = products.find(p => p.id === id);
     if (!product) return;
     const newName = prompt("Nuevo nombre:", product.name);
@@ -430,24 +500,25 @@ function editProduct(id) {
     if (newName !== null) product.name = newName;
     if (newPrice !== null) product.price = parseFloat(newPrice) || product.price;
     if (newQuantity !== null) product.quantity = parseInt(newQuantity) || product.quantity;
-    localStorage.setItem("products", JSON.stringify(products));
+    await saveItem(productsStore, product);
+    products = await getAll(productsStore);
     renderProducts();
     renderInventory();
 }
 
-function deleteProduct(id) {
+async function deleteProduct(id) {
     if (confirm("¿Eliminar este producto?")) {
-        products = products.filter(p => p.id !== id);
-        localStorage.setItem("products", JSON.stringify(products));
+        await deleteItem(productsStore, id);
+        products = await getAll(productsStore);
         renderProducts();
         renderInventory();
     }
 }
 
-function deleteSoldProduct(id) {
+async function deleteSoldProduct(id) {
     if (confirm("¿Eliminar este producto vendido?")) {
-        products = products.filter(p => p.id !== id);
-        localStorage.setItem("products", JSON.stringify(products));
+        await deleteItem(productsStore, id);
+        products = await getAll(productsStore);
         renderProducts();
         renderInventory();
     }
@@ -475,19 +546,29 @@ document.getElementById("uploadForm").addEventListener("submit", function(e) {
     let processed = 0;
     const total = files.length;
 
-    const save = (img, index) => {
-        products.push({
+    const save = async (img, index) => {
+        const product = {
             id: Date.now() + index,
             name: total > 1 ? `${name} ${index + 1}` : name,
             price,
             quantity,
             image: img
-        });
+        };
+        products.push(product);
         processed++;
-        // Guardar inmediatamente en localStorage después de cada imagen procesada
-        localStorage.setItem("products", JSON.stringify(products));
-        renderProducts();
-        renderInventory();
+        // Guardar inmediatamente en IndexedDB después de cada imagen procesada
+        try {
+            await saveItem(productsStore, product);
+            products = await getAll(productsStore);
+            renderProducts();
+            renderInventory();
+        } catch (e) {
+            alert("Error al guardar el producto: " + e.message);
+            // Revertir el push si no se pudo guardar
+            products.pop();
+            processed--;
+            return;
+        }
         if (processed === total) {
             this.reset();
         }
