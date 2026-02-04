@@ -292,9 +292,7 @@ footer {
 <!-- CATALOGO -->
 <div class="section">
 <h2>Catálogo de Productos</h2>
-<div id="adminMessage" style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 10px; margin-bottom: 15px; border-radius: 5px; display: none;">
-    <strong>Nota:</strong> Para editar o eliminar productos, haz clic en "Modo Admin" e ingresa la contraseña.
-</div>
+
 <div id="loadingIndicator" style="text-align: center; padding: 20px; display: none;">
     <p>Cargando productos...</p>
 </div>
@@ -386,7 +384,9 @@ async function loadData() {
 }
 
 // Load data on page load
-loadData();
+window.addEventListener('DOMContentLoaded', async () => {
+    await loadData();
+});
 
 function loginAdmin() {
     if (!isAdmin) {
@@ -524,7 +524,7 @@ async function deleteProduct(id) {
     // Find the product to show details in confirmation
     const product = products.find(p => p.id === id);
     if (!product) {
-        alert("Producto no encontrado");
+        alert("Producto no encontrado en la lista actual. Intenta recargar la página.");
         return;
     }
 
@@ -566,14 +566,17 @@ async function deleteProduct(id) {
     }).then(async (shouldDelete) => {
         if (shouldDelete) {
             let deleted = false;
+            let errorMessage = "";
 
             // First try Firebase
             try {
                 await db.collection('products').doc(id).delete();
                 console.log("Product deleted from Firebase:", id);
                 deleted = true;
-            } catch (error) {
-                console.error("Error deleting from Firebase:", error);
+            } catch (firebaseError) {
+                console.error("Error deleting from Firebase:", firebaseError);
+                errorMessage = "Error en Firebase: " + firebaseError.message;
+
                 // If Firebase fails, try localStorage
                 try {
                     // Remove from local products array
@@ -585,11 +588,14 @@ async function deleteProduct(id) {
                         localStorage.setItem("products", JSON.stringify(products));
                         console.log("Product deleted from localStorage:", id);
                         deleted = true;
+                        errorMessage = ""; // Clear error since localStorage worked
                     } else {
                         console.error("Product not found in local array:", id);
+                        errorMessage += " | Producto no encontrado en almacenamiento local";
                     }
                 } catch (localError) {
                     console.error("Error deleting from localStorage:", localError);
+                    errorMessage += " | Error en almacenamiento local: " + localError.message;
                 }
             }
 
@@ -597,7 +603,7 @@ async function deleteProduct(id) {
                 alert("Producto eliminado exitosamente");
                 await loadData(); // Reload to reflect changes
             } else {
-                alert("Error: No se pudo eliminar el producto. Verifica los permisos de Firebase o intenta recargar la página.");
+                alert("Error: No se pudo eliminar el producto.\n\nDetalles: " + errorMessage + "\n\nIntenta recargar la página o verifica tu conexión a internet.");
             }
         }
     });
