@@ -292,6 +292,9 @@ footer {
 <!-- CATALOGO -->
 <div class="section">
 <h2>Catálogo de Productos</h2>
+<div id="loadingIndicator" style="text-align: center; padding: 20px; display: none;">
+    <p>Cargando productos...</p>
+</div>
 <div id="productsContainer" class="products"></div>
 </div>
 
@@ -348,6 +351,13 @@ let isAdmin = false;
 
 // Load data from Firestore
 async function loadData() {
+    const loadingIndicator = document.getElementById("loadingIndicator");
+    const productsContainer = document.getElementById("productsContainer");
+
+    // Show loading indicator
+    loadingIndicator.style.display = "block";
+    productsContainer.style.display = "none";
+
     try {
         const productsSnapshot = await db.collection('products').get();
         products = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -362,6 +372,10 @@ async function loadData() {
         sales = JSON.parse(localStorage.getItem("sales")) || [];
         console.log("Loaded from localStorage:", products.length, "products");
     }
+
+    // Hide loading indicator and show products
+    loadingIndicator.style.display = "none";
+    productsContainer.style.display = "grid";
 
     renderProducts();
     renderInventory();
@@ -490,14 +504,25 @@ async function editProduct(id) {
 }
 
 async function deleteProduct(id) {
+    console.log("deleteProduct called with id:", id, "isAdmin:", isAdmin);
+    if (!isAdmin) {
+        alert("Debes estar logueado como administrador para eliminar productos");
+        return;
+    }
     if (confirm("¿Eliminar este producto?")) {
         try {
             await db.collection('products').doc(id).delete();
-            await loadData();
+            console.log("Product deleted from Firebase:", id);
+            alert("Producto eliminado exitosamente");
         } catch (error) {
-            console.error("Error deleting product:", error);
-            alert("Error al eliminar el producto");
+            console.error("Error deleting from Firebase, trying localStorage:", error);
+            // Fallback: remove from localStorage
+            products = products.filter(p => p.id !== id);
+            localStorage.setItem("products", JSON.stringify(products));
+            console.log("Product deleted from localStorage:", id);
+            alert("Producto eliminado del almacenamiento local");
         }
+        await loadData();
     }
 }
 
@@ -516,7 +541,6 @@ async function deleteSoldProduct(id) {
 document.getElementById("uploadForm").addEventListener("submit", function(e) {
     e.preventDefault();
     console.log("Form submitted, isAdmin:", isAdmin);
-    alert("Formulario enviado, isAdmin: " + isAdmin); // Debug alert
     if (!isAdmin) {
         alert("Solo el administrador puede publicar productos");
         return;
