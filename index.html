@@ -410,12 +410,8 @@ function loginAdmin() {
 }
 
 function renderProducts() {
-    const adminMessage = document.getElementById("adminMessage");
     const container = document.getElementById("productsContainer");
     container.innerHTML = "";
-
-    // Show admin message if not logged in
-    adminMessage.style.display = isAdmin ? "none" : "block";
 
     if (products.length === 0) {
         container.innerHTML = "<p>No hay productos.</p>";
@@ -568,42 +564,39 @@ async function deleteProduct(id) {
             let deleted = false;
             let errorMessage = "";
 
-            // First try Firebase
+            // Always try localStorage first (for products uploaded before Firebase)
+            try {
+                const initialLength = products.length;
+                products = products.filter(p => p.id !== id);
+
+                if (products.length < initialLength) {
+                    localStorage.setItem("products", JSON.stringify(products));
+                    console.log("Product deleted from localStorage:", id);
+                    deleted = true;
+                }
+            } catch (localError) {
+                console.error("Error deleting from localStorage:", localError);
+                errorMessage += "Error en localStorage: " + localError.message;
+            }
+
+            // Then try Firebase (for newer products)
             try {
                 await db.collection('products').doc(id).delete();
                 console.log("Product deleted from Firebase:", id);
-                deleted = true;
+                // Firebase deletion is successful, but we already marked as deleted if localStorage worked
             } catch (firebaseError) {
                 console.error("Error deleting from Firebase:", firebaseError);
-                errorMessage = "Error en Firebase: " + firebaseError.message;
-
-                // If Firebase fails, try localStorage
-                try {
-                    // Remove from local products array
-                    const initialLength = products.length;
-                    products = products.filter(p => p.id !== id);
-
-                    if (products.length < initialLength) {
-                        // Product was found and removed from array
-                        localStorage.setItem("products", JSON.stringify(products));
-                        console.log("Product deleted from localStorage:", id);
-                        deleted = true;
-                        errorMessage = ""; // Clear error since localStorage worked
-                    } else {
-                        console.error("Product not found in local array:", id);
-                        errorMessage += " | Producto no encontrado en almacenamiento local";
-                    }
-                } catch (localError) {
-                    console.error("Error deleting from localStorage:", localError);
-                    errorMessage += " | Error en almacenamiento local: " + localError.message;
+                if (!deleted) {
+                    errorMessage += " | Error en Firebase: " + firebaseError.message;
                 }
+                // If localStorage deletion worked, we don't care about Firebase error
             }
 
             if (deleted) {
                 alert("Producto eliminado exitosamente");
                 await loadData(); // Reload to reflect changes
             } else {
-                alert("Error: No se pudo eliminar el producto.\n\nDetalles: " + errorMessage + "\n\nIntenta recargar la página o verifica tu conexión a internet.");
+                alert("Error: No se pudo eliminar el producto.\n\nDetalles: " + errorMessage + "\n\nIntenta recargar la página.");
             }
         }
     });
