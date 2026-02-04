@@ -520,21 +520,87 @@ async function deleteProduct(id) {
         alert("Debes estar logueado como administrador para eliminar productos");
         return;
     }
-    if (confirm("¿Eliminar este producto?")) {
-        try {
-            await db.collection('products').doc(id).delete();
-            console.log("Product deleted from Firebase:", id);
-            alert("Producto eliminado exitosamente");
-        } catch (error) {
-            console.error("Error deleting from Firebase, trying localStorage:", error);
-            // Fallback: remove from localStorage
-            products = products.filter(p => p.id !== id);
-            localStorage.setItem("products", JSON.stringify(products));
-            console.log("Product deleted from localStorage:", id);
-            alert("Producto eliminado del almacenamiento local");
-        }
-        await loadData();
+
+    // Find the product to show details in confirmation
+    const product = products.find(p => p.id === id);
+    if (!product) {
+        alert("Producto no encontrado");
+        return;
     }
+
+    // Show detailed confirmation with product info and image
+    const confirmMessage = `¿Eliminar este producto?\n\nNombre: ${product.name}\nPrecio: Q${product.price}\nStock: ${product.quantity}\n\nEsta acción no se puede deshacer.`;
+
+    // Create a modal-like confirmation with image
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center;
+        z-index: 10000;
+    `;
+
+    modal.innerHTML = `
+        <div style="background: white; padding: 20px; border-radius: 10px; max-width: 400px; text-align: center;">
+            <h3>¿Eliminar este producto?</h3>
+            <img src="${product.image}" style="max-width: 200px; max-height: 200px; margin: 10px 0;">
+            <p><strong>Nombre:</strong> ${product.name}</p>
+            <p><strong>Precio:</strong> Q${product.price}</p>
+            <p><strong>Stock:</strong> ${product.quantity}</p>
+            <p style="color: red; font-weight: bold;">Esta acción no se puede deshacer.</p>
+            <button id="confirmDelete" style="background: red; color: white; border: none; padding: 10px 20px; margin: 5px; border-radius: 5px; cursor: pointer;">Eliminar</button>
+            <button id="cancelDelete" style="background: gray; color: white; border: none; padding: 10px 20px; margin: 5px; border-radius: 5px; cursor: pointer;">Cancelar</button>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    return new Promise((resolve) => {
+        document.getElementById('confirmDelete').onclick = () => {
+            document.body.removeChild(modal);
+            resolve(true);
+        };
+        document.getElementById('cancelDelete').onclick = () => {
+            document.body.removeChild(modal);
+            resolve(false);
+        };
+    }).then(async (shouldDelete) => {
+        if (shouldDelete) {
+            let deleted = false;
+
+            // First try Firebase
+            try {
+                await db.collection('products').doc(id).delete();
+                console.log("Product deleted from Firebase:", id);
+                deleted = true;
+            } catch (error) {
+                console.error("Error deleting from Firebase:", error);
+                // If Firebase fails, try localStorage
+                try {
+                    // Remove from local products array
+                    const initialLength = products.length;
+                    products = products.filter(p => p.id !== id);
+
+                    if (products.length < initialLength) {
+                        // Product was found and removed from array
+                        localStorage.setItem("products", JSON.stringify(products));
+                        console.log("Product deleted from localStorage:", id);
+                        deleted = true;
+                    } else {
+                        console.error("Product not found in local array:", id);
+                    }
+                } catch (localError) {
+                    console.error("Error deleting from localStorage:", localError);
+                }
+            }
+
+            if (deleted) {
+                alert("Producto eliminado exitosamente");
+                await loadData(); // Reload to reflect changes
+            } else {
+                alert("Error: No se pudo eliminar el producto. Verifica los permisos de Firebase o intenta recargar la página.");
+            }
+        }
+    });
 }
 
 async function deleteSoldProduct(id) {
