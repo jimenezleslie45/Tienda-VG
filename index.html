@@ -582,7 +582,13 @@ async function deleteProduct(id) {
                 }
             } catch (localError) {
                 console.error("Error deleting from localStorage:", localError);
-                errorMessage += "Error en localStorage: " + localError.message;
+                if (localError.name === 'QuotaExceededError') {
+                    // localStorage is full, but we can still delete from Firebase
+                    console.log("localStorage quota exceeded, proceeding with Firebase deletion");
+                    // Don't mark as deleted yet, let Firebase handle it
+                } else {
+                    errorMessage += "Error en localStorage: " + localError.message;
+                }
             }
 
             // Then try Firebase (for newer products)
