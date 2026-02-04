@@ -51,6 +51,14 @@ header {
     text-decoration: none;
     border-radius: 25px;
     font-weight: bold;
+    border: 2px solid black;
+    transition: all 0.3s ease;
+}
+
+.whatsapp-link:hover {
+    background: #2ecc71;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .container {
@@ -122,11 +130,19 @@ header {
     margin-top: 10px;
     width: 100%;
     padding: 10px;
-    background: var(--primary);
+    background: #8a2be2; /* Flat purple color */
     border: none;
+    border-radius: 25px; /* More rounded borders */
     color: white;
     font-weight: bold;
     cursor: pointer;
+    transition: all 0.3s ease; /* Smooth transition for hover effects */
+}
+
+.product button:hover {
+    background: #9932cc; /* Darker purple on hover */
+    transform: translateY(-2px); /* Slight lift effect */
+    box-shadow: 0 4px 8px rgba(138, 43, 226, 0.3); /* Shadow effect */
 }
 
 .grid-2 {
@@ -272,7 +288,7 @@ footer {
 <header>
     <img src="imagen/Logo1.jpg" class="header-logo">
     <h1 style="font-family: 'Georgia', serif; font-size: 3em; font-weight: bold; color: var(--text); text-shadow: 2px 2px 4px rgba(0,0,0,0.3); margin: 20px 0; letter-spacing: 2px;">Variedades García</h1>
-    <p style="font-family: 'Georgia', serif; font-size: 1.2em; color: var(--text);">Todos nuestros productos son de alta calidad y extraídos de USA</p>
+    <p style="font-family: 'Georgia', serif; font-size: 1.2em; color: var(--text);">Todos nuestros productos son de alta calidad 🇺🇸</p>
     <a class="whatsapp-link" href="https://wa.me/44969900" target="_blank">
         Escríbenos por WhatsApp
     </a>
