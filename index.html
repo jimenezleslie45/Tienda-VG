@@ -283,7 +283,7 @@ footer {
     <input type="text" id="productName" placeholder="Nombre del producto">
     <input type="number" id="productPrice" placeholder="Precio">
     <input type="number" id="productQuantity" placeholder="Cantidad">
-    <input type="file" id="productImage" accept="image/*">
+    <input type="file" id="productImage" accept="image/*" multiple required>
 
     <button type="submit">Publicar Producto</button>
 </form>
@@ -351,16 +351,18 @@ async function loadData() {
     try {
         const productsSnapshot = await db.collection('products').get();
         products = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        
+
         const salesSnapshot = await db.collection('sales').get();
         sales = salesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        console.log("Loaded from Firebase:", products.length, "products");
     } catch (error) {
-        console.error("Error loading data:", error);
+        console.error("Error loading from Firebase, using localStorage:", error);
         // Fallback to localStorage if Firebase fails
         products = JSON.parse(localStorage.getItem("products")) || [];
         sales = JSON.parse(localStorage.getItem("sales")) || [];
+        console.log("Loaded from localStorage:", products.length, "products");
     }
-    
+
     renderProducts();
     renderInventory();
     renderSales();
@@ -514,6 +516,7 @@ async function deleteSoldProduct(id) {
 document.getElementById("uploadForm").addEventListener("submit", function(e) {
     e.preventDefault();
     console.log("Form submitted, isAdmin:", isAdmin);
+    alert("Formulario enviado, isAdmin: " + isAdmin); // Debug alert
     if (!isAdmin) {
         alert("Solo el administrador puede publicar productos");
         return;
@@ -538,19 +541,23 @@ document.getElementById("uploadForm").addEventListener("submit", function(e) {
             name: total > 1 ? `${name} ${index + 1}` : name,
             price,
             quantity,
-            image: img
+            image: img,
+            id: Date.now() + index // Add id for localStorage
         };
         try {
             await db.collection('products').add(product);
-            console.log("Product saved successfully:", product.name);
+            console.log("Product saved successfully to Firebase:", product.name);
+            alert("Producto guardado en Firebase: " + product.name);
         } catch (error) {
-            console.error("Error saving product:", error);
-            alert("Error al guardar el producto: " + error.message);
-            return;
+            console.error("Error saving to Firebase, using localStorage fallback:", error);
+            // Fallback to localStorage
+            products.push(product);
+            localStorage.setItem("products", JSON.stringify(products));
+            alert("Producto guardado localmente (Firebase no disponible): " + product.name);
         }
         processed++;
         if (processed === total) {
-            await loadData(); // Reload data only after all products are saved
+            await loadData(); // Reload data
             document.getElementById("uploadForm").reset();
             alert("¡Productos publicados exitosamente!");
         }
