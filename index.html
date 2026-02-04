@@ -292,6 +292,9 @@ footer {
 <!-- CATALOGO -->
 <div class="section">
 <h2>Catálogo de Productos</h2>
+<div id="adminMessage" style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 10px; margin-bottom: 15px; border-radius: 5px; display: none;">
+    <strong>Nota:</strong> Para editar o eliminar productos, haz clic en "Modo Admin" e ingresa la contraseña.
+</div>
 <div id="loadingIndicator" style="text-align: center; padding: 20px; display: none;">
     <p>Cargando productos...</p>
 </div>
@@ -392,6 +395,8 @@ function loginAdmin() {
             isAdmin = true;
             document.getElementById("adminPanel").style.display = "block";
             document.querySelector("button[onclick='loginAdmin()']").textContent = "Salir Admin";
+            renderProducts(); // Re-render products to show edit/delete buttons
+            renderInventory(); // Re-render inventory for admin
         } else {
             alert("Contraseña incorrecta");
         }
@@ -399,12 +404,18 @@ function loginAdmin() {
         isAdmin = false;
         document.getElementById("adminPanel").style.display = "none";
         document.querySelector("button[onclick='loginAdmin()']").textContent = "Modo Admin";
+        renderProducts(); // Re-render products to hide edit/delete buttons
+        renderInventory(); // Re-render inventory for non-admin
     }
 }
 
 function renderProducts() {
+    const adminMessage = document.getElementById("adminMessage");
     const container = document.getElementById("productsContainer");
     container.innerHTML = "";
+
+    // Show admin message if not logged in
+    adminMessage.style.display = isAdmin ? "none" : "block";
 
     if (products.length === 0) {
         container.innerHTML = "<p>No hay productos.</p>";
