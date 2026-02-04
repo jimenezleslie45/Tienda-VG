@@ -519,10 +519,10 @@ document.getElementById("uploadForm").addEventListener("submit", function(e) {
         return;
     }
 
-    const name = productName.value || "Producto sin nombre";
-    const price = productPrice.value || 0;
-    const quantity = productQuantity.value || 0;
-    const files = productImage.files;
+    const name = document.getElementById("productName").value || "Producto sin nombre";
+    const price = parseFloat(document.getElementById("productPrice").value) || 0;
+    const quantity = parseInt(document.getElementById("productQuantity").value) || 0;
+    const files = document.getElementById("productImage").files;
     console.log("Files selected:", files.length);
 
     if (files.length === 0) {
@@ -542,7 +542,7 @@ document.getElementById("uploadForm").addEventListener("submit", function(e) {
         };
         try {
             await db.collection('products').add(product);
-            await loadData();
+            console.log("Product saved successfully:", product.name);
         } catch (error) {
             console.error("Error saving product:", error);
             alert("Error al guardar el producto: " + error.message);
@@ -550,7 +550,9 @@ document.getElementById("uploadForm").addEventListener("submit", function(e) {
         }
         processed++;
         if (processed === total) {
-            this.reset();
+            await loadData(); // Reload data only after all products are saved
+            document.getElementById("uploadForm").reset();
+            alert("¡Productos publicados exitosamente!");
         }
     };
 
