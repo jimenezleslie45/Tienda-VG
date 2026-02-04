@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Variedades García</title>
+    <title>Variedades García</title>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
 <style>
 :root {
@@ -323,78 +327,47 @@ footer {
 </footer>
 
 <script>
-// IndexedDB setup
-let db;
-const dbName = 'TiendaDB';
-const productsStore = 'products';
-const salesStore = 'sales';
+// Firebase setup
+const firebaseConfig = {
+    apiKey: "AIzaSyApDMs2aGbfWOhWQ3KYI0Km7R44Ljfz90U",
+    authDomain: "variedades-garcia-c4623.firebaseapp.com",
+    projectId: "variedades-garcia-c4623",
+    storageBucket: "variedades-garcia-c4623.firebasestorage.app",
+    messagingSenderId: "991381221338",
+    appId: "1:991381221338:web:bf5caf9b10d99bc6efdae3",
+    measurementId: "G-FR3X9R4WZR"
+};
 
-function openDB() {
-    return new Promise((resolve, reject) => {
-        const request = indexedDB.open(dbName, 1);
-        request.onerror = () => reject(request.error);
-        request.onsuccess = () => {
-            db = request.result;
-            resolve(db);
-        };
-        request.onupgradeneeded = (event) => {
-            const db = event.target.result;
-            if (!db.objectStoreNames.contains(productsStore)) {
-                db.createObjectStore(productsStore, { keyPath: 'id' });
-            }
-            if (!db.objectStoreNames.contains(salesStore)) {
-                db.createObjectStore(salesStore, { keyPath: 'id', autoIncrement: true });
-            }
-        };
-    });
-}
-
-async function loadData() {
-    await openDB();
-    products = await getAll(productsStore);
-    sales = await getAll(salesStore);
-}
-
-function getAll(storeName) {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction([storeName], 'readonly');
-        const store = transaction.objectStore(storeName);
-        const request = store.getAll();
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
-}
-
-function saveItem(storeName, item) {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction([storeName], 'readwrite');
-        const store = transaction.objectStore(storeName);
-        const request = store.put(item);
-        request.onsuccess = () => resolve();
-        request.onerror = () => reject(request.error);
-    });
-}
-
-function deleteItem(storeName, id) {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction([storeName], 'readwrite');
-        const store = transaction.objectStore(storeName);
-        const request = store.delete(id);
-        request.onsuccess = () => resolve();
-        request.onerror = () => reject(request.error);
-    });
-}
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
 let products = [];
 let sales = [];
 let isAdmin = false;
 
-// Load data on page load
-loadData().then(() => {
+// Load data from Firestore
+async function loadData() {
+    try {
+        const productsSnapshot = await db.collection('products').get();
+        products = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        const salesSnapshot = await db.collection('sales').get();
+        sales = salesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (error) {
+        console.error("Error loading data:", error);
+        // Fallback to localStorage if Firebase fails
+        products = JSON.parse(localStorage.getItem("products")) || [];
+        sales = JSON.parse(localStorage.getItem("sales")) || [];
+    }
+    
     renderProducts();
     renderInventory();
     renderSales();
-});
+}
+
+// Load data on page load
+loadData();
 
 function loginAdmin() {
     if (!isAdmin) {
@@ -474,18 +447,19 @@ async function sellProduct(id) {
     }
 
     product.quantity--;
-    await saveItem(productsStore, product);
-    await saveItem(salesStore, {
-        name: product.name,
-        date: new Date().toLocaleDateString()
-    });
-
-    products = await getAll(productsStore);
-    sales = await getAll(salesStore);
-
-    renderProducts();
-    renderInventory();
-    renderSales();
+    try {
+        await db.collection('products').doc(id).update({ quantity: product.quantity });
+        await db.collection('sales').add({
+            name: product.name,
+            date: new Date().toLocaleDateString()
+        });
+        
+        // Reload data
+        await loadData();
+    } catch (error) {
+        console.error("Error updating product:", error);
+        alert("Error al actualizar el producto");
+    }
 
     const msg = `¡Hola, Variedades García! 👋🌟Me gustaría solicitar información o comprar el siguiente producto ${product.name} por Q${product.price}`;
     window.open(`https://wa.me/44969900?text=${encodeURIComponent(msg)}`, "_blank");
@@ -500,27 +474,40 @@ async function editProduct(id) {
     if (newName !== null) product.name = newName;
     if (newPrice !== null) product.price = parseFloat(newPrice) || product.price;
     if (newQuantity !== null) product.quantity = parseInt(newQuantity) || product.quantity;
-    await saveItem(productsStore, product);
-    products = await getAll(productsStore);
-    renderProducts();
-    renderInventory();
+    try {
+        await db.collection('products').doc(id).update({
+            name: product.name,
+            price: product.price,
+            quantity: product.quantity
+        });
+        await loadData();
+    } catch (error) {
+        console.error("Error updating product:", error);
+        alert("Error al actualizar el producto");
+    }
 }
 
 async function deleteProduct(id) {
     if (confirm("¿Eliminar este producto?")) {
-        await deleteItem(productsStore, id);
-        products = await getAll(productsStore);
-        renderProducts();
-        renderInventory();
+        try {
+            await db.collection('products').doc(id).delete();
+            await loadData();
+        } catch (error) {
+            console.error("Error deleting product:", error);
+            alert("Error al eliminar el producto");
+        }
     }
 }
 
 async function deleteSoldProduct(id) {
     if (confirm("¿Eliminar este producto vendido?")) {
-        await deleteItem(productsStore, id);
-        products = await getAll(productsStore);
-        renderProducts();
-        renderInventory();
+        try {
+            await db.collection('products').doc(id).delete();
+            await loadData();
+        } catch (error) {
+            console.error("Error deleting product:", error);
+            alert("Error al eliminar el producto");
+        }
     }
 }
 
@@ -548,27 +535,20 @@ document.getElementById("uploadForm").addEventListener("submit", function(e) {
 
     const save = async (img, index) => {
         const product = {
-            id: Date.now() + index,
             name: total > 1 ? `${name} ${index + 1}` : name,
             price,
             quantity,
             image: img
         };
-        products.push(product);
-        processed++;
-        // Guardar inmediatamente en IndexedDB después de cada imagen procesada
         try {
-            await saveItem(productsStore, product);
-            products = await getAll(productsStore);
-            renderProducts();
-            renderInventory();
-        } catch (e) {
-            alert("Error al guardar el producto: " + e.message);
-            // Revertir el push si no se pudo guardar
-            products.pop();
-            processed--;
+            await db.collection('products').add(product);
+            await loadData();
+        } catch (error) {
+            console.error("Error saving product:", error);
+            alert("Error al guardar el producto: " + error.message);
             return;
         }
+        processed++;
         if (processed === total) {
             this.reset();
         }
