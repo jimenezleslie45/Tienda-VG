@@ -426,12 +426,12 @@ function renderProducts() {
             <h3>${p.name}</h3>
             <p>Q${p.price}</p>
             <p>Stock: ${p.quantity}</p>
-            <button onclick="sellProduct(${p.id})">Comprar</button>
+            <button onclick="sellProduct('${p.id}')">Comprar</button>
         `;
         if (isAdmin) {
-            div.innerHTML += `<button onclick="editProduct(${p.id})">Editar</button><button onclick="deleteProduct(${p.id})">Eliminar</button>`;
+            div.innerHTML += `<button onclick="editProduct('${p.id}')">Editar</button><button onclick="deleteProduct('${p.id}')">Eliminar</button>`;
             if (p.quantity === 0) {
-                div.innerHTML += `<button onclick="deleteSoldProduct(${p.id})" style="background:red;">Eliminar Vendido</button>`;
+                div.innerHTML += `<button onclick="deleteSoldProduct('${p.id}')" style="background:red;">Eliminar Vendido</button>`;
             }
         }
         container.appendChild(div);
